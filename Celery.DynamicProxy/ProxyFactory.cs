@@ -17,6 +17,45 @@ namespace Celery.DynamicProxy
             return rval;
         }
     }
+
+    public class Test
+    {
+        public virtual void DoSomething()
+        {
+            Console.WriteLine("Do something");
+        }
+    }
+
+    public class Test_Proxy123123123 : Test, IProxy
+    {
+
+        public override void DoSomething()
+        {
+            if (Intercepter == null)
+            {
+                throw new NotImplementedException();
+            }
+            IMethodInvocation invocation = 
+                new DefaultMethodInvocation(
+                    this, 
+                    typeof(Test).GetMethod("DoSomething"), 
+                    typeof(Test),
+                    null,
+                    null);
+            Intercepter.Invoke(invocation);
+        }
+
+        #region IProxy Members
+
+        public IMethodInterceptor Intercepter
+        {
+            get;
+            set;
+        }
+
+        #endregion
+    }
+
     public class ProxyFactory
     {
         public virtual Type CreateProxyType(

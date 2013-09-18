@@ -7,12 +7,6 @@ using System.Reflection;
 
 namespace Celery.DynamicProxy
 {
-    internal struct Constructors
-    {
-        public static readonly ConstructorInfo ProxyBaseConstructor =
-            typeof(object).GetConstructor(new Type[0]);
-    }
-
     public class ProxyTypeBuilder
     {
         private const string DEFAULT_PROXY_TYPE_NAME = "DynamicProxy";
@@ -33,7 +27,7 @@ namespace Celery.DynamicProxy
         {
             TypeBuilder typeBuilder = 
                 CreateProxyTypeBuilder(DEFAULT_PROXY_TYPE_NAME, baseType);
-            DefineProxyConstructor(Constructors.ProxyBaseConstructor, typeBuilder);
+            DefineProxyConstructor(ReferenceData.ObjectConstructor, typeBuilder);
 
             return typeBuilder.CreateType();
         }
@@ -155,7 +149,7 @@ namespace Celery.DynamicProxy
                 typeBuilder.DefineMethod(
                     getMethodName,
                     attributes,
-                    CallingConventions.HasThis,
+                    CallingConventions.Standard,
                     propertyType,
                     new Type[0]);
 
