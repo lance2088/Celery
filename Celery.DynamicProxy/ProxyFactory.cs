@@ -7,12 +7,15 @@ namespace Celery.DynamicProxy
 {
     public class DebugInterceptor : IMethodInterceptor
     {
+        private object target;
+        public DebugInterceptor(object target)
+        {
+            this.target = target;
+        }
         public object Invoke(IMethodInvocation invocation)
         {
             Console.WriteLine("Before: invocation=[{0}]", invocation);
-            //在执行该方法时，会递归调用调用链中的所有切入行为
-            //最后调用真正的目标方法
-            object rval = invocation.Execute();
+            object rval = invocation.Invoke(target);
             Console.WriteLine("Invocation returned");
             return rval;
         }
@@ -38,9 +41,9 @@ namespace Celery.DynamicProxy
             IMethodInvocation invocation = 
                 new DefaultMethodInvocation(
                     this, 
-                    typeof(Test).GetMethod("DoSomething"), 
-                    typeof(Test),
                     null,
+                    typeof(Test),
+                    typeof(Test).GetMethod("DoSomething"),
                     null);
             Intercepter.Invoke(invocation);
         }

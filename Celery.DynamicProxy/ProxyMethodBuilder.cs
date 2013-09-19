@@ -66,28 +66,40 @@ namespace Celery.DynamicProxy
 
             il.DeclareLocal(typeof(IMethodInvocation));
 
+            //this.get_Interceptor();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Callvirt, ReferenceData.InterceptorGetMethod);
 
             Label jmpThrow = il.DefineLabel();
 
+            //if (Intercepter == null)
             il.Emit(OpCodes.Dup);
             il.Emit(OpCodes.Ldnull);
             il.Emit(OpCodes.Bne_Un, jmpThrow);
 
+            //throw new NotImplementedException();
             il.Emit(OpCodes.Newobj, ReferenceData.NotImplementedExceptionConstructor);
             il.Emit(OpCodes.Throw);
 
             il.MarkLabel(jmpThrow);
 
+            //push this pointer onto stack
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldtoken, methodInfo);
+            //get RuntimeMethodHandle of methodInfo, push onto stack
+            il.Emit(OpCodes.Ldtoken, methodInfo);  
 
+            // MethodBase.GetMethodFromHandle(runtime(methodInfo));
             il.Emit(OpCodes.Call, ReferenceData.GetMethodFromHandle);
             il.Emit(OpCodes.Castclass, typeof(MethodInfo));
 
-            PushGenericArgs(methodInfo, il);
+            //PushGenericArgs(methodInfo, il);
             PushParameters(methodInfo, il);
+
+            //IMethodInvocation invocation = new DefaultMethodInvocation(...);
+            il.Emit(OpCodes.Newobj, 
+                ReferenceData.DefaultMethodInvocationConstructor);
+
+
         }
 
         private void PushGenericArgs(MethodInfo methodInfo, ILGenerator il)
@@ -99,7 +111,7 @@ namespace Celery.DynamicProxy
             {
                 genArgsCount = genericArgs.Length;
             }
-            //Type[] genericArgs = new Type[genArgsCount]
+            //Type[] genericTypeArgs = new Type[genArgsCount];
             il.Emit(OpCodes.Ldc_I4, genArgsCount);
             il.Emit(OpCodes.Newarr, typeof(Type));
 
@@ -108,11 +120,11 @@ namespace Celery.DynamicProxy
                 for (int i = 0; i < genArgsCount; i++)
                 {
                     Type currentType = genericArgs[i];
-
+                    //genericTypeArgs[i] = Type.GetTypeFromHandle(runtime(currentType));
                     il.Emit(OpCodes.Dup);
                     il.Emit(OpCodes.Ldc_I4, i);
                     il.Emit(OpCodes.Ldtoken, currentType);
-                    il.Emit(OpCodes.Call, ReferenceData.GetMethodFromHandle);
+                    il.Emit(OpCodes.Call, ReferenceData.GetTypeFromHandle);
                     il.Emit(OpCodes.Stelem_Ref);
                 }
             }
@@ -126,6 +138,7 @@ namespace Celery.DynamicProxy
             {
                 paramCount = paramInfos.Length;
             }
+            //object[] args = new object[paramCount];
             il.Emit(OpCodes.Ldc_I4, paramCount);
             il.Emit(OpCodes.Newarr, typeof(object));
 

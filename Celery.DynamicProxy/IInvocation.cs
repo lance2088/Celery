@@ -7,7 +7,6 @@ namespace Celery.DynamicProxy
 {
     public interface IInvocation
     {
-        object[] Arguments { get; }
-        object Execute();
+        object[] Parameters { get; }
     }
 }

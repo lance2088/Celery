@@ -10,7 +10,6 @@ namespace Celery.DynamicProxy
     {
         MethodInfo Method { get; }
         object Proxy { get; }
-        object Target { get; }
-        object TargetType { get; }
+        object Invoke(object target);
     }
 }
