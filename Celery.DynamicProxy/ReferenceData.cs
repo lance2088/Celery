@@ -31,5 +31,7 @@ namespace Celery.DynamicProxy
                 "GetMethodFromHandle", new Type[] { typeof(RuntimeMethodHandle) });
         public static readonly MethodInfo GetTypeFromHandle = 
             typeof(Type).GetMethod("GetTypeFromHandle", new Type[] { typeof(RuntimeTypeHandle) });
+
+        public static MethodInfo MethodInterceptorInvokeMethod = typeof(IMethodInterceptor).GetMethod("Invoke");
     }
 }

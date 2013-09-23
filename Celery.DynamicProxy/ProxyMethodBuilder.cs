@@ -99,6 +99,10 @@ namespace Celery.DynamicProxy
             il.Emit(OpCodes.Newobj, 
                 ReferenceData.DefaultMethodInvocationConstructor);
 
+            //Intercepter.Invoke(invocation);
+            il.Emit(OpCodes.Call, 
+                ReferenceData.MethodInterceptorInvokeMethod);
+
 
         }
 

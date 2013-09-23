@@ -41,8 +41,6 @@ namespace Celery.DynamicProxy
             IMethodInvocation invocation = 
                 new DefaultMethodInvocation(
                     this, 
-                    null,
-                    typeof(Test),
                     typeof(Test).GetMethod("DoSomething"),
                     null);
             Intercepter.Invoke(invocation);
