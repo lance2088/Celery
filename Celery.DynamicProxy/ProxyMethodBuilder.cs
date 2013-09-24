@@ -89,7 +89,7 @@ namespace Celery.DynamicProxy
             il.Emit(OpCodes.Ldtoken, methodInfo);  
 
             // MethodBase.GetMethodFromHandle(runtime(methodInfo));
-            il.Emit(OpCodes.Call, ReferenceData.GetMethodFromHandle);
+            il.Emit(OpCodes.Callvirt, ReferenceData.GetMethodFromHandle);
             il.Emit(OpCodes.Castclass, typeof(MethodInfo));
 
             //PushGenericArgs(methodInfo, il);
@@ -100,8 +100,10 @@ namespace Celery.DynamicProxy
                 ReferenceData.DefaultMethodInvocationConstructor);
 
             //Intercepter.Invoke(invocation);
-            il.Emit(OpCodes.Call, 
+            il.Emit(OpCodes.Callvirt, 
                 ReferenceData.MethodInterceptorInvokeMethod);
+
+
 
 
         }
@@ -128,7 +130,7 @@ namespace Celery.DynamicProxy
                     il.Emit(OpCodes.Dup);
                     il.Emit(OpCodes.Ldc_I4, i);
                     il.Emit(OpCodes.Ldtoken, currentType);
-                    il.Emit(OpCodes.Call, ReferenceData.GetTypeFromHandle);
+                    il.Emit(OpCodes.Callvirt, ReferenceData.GetTypeFromHandle);
                     il.Emit(OpCodes.Stelem_Ref);
                 }
             }

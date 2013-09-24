@@ -24,6 +24,11 @@ namespace Celery.DynamicProxy
 
         #region IMethodInvocation Members
 
+        public object Proxy
+        {
+            get { return this.proxy; }
+        }
+
         public MethodInfo Method
         {
             get { return this.method; }

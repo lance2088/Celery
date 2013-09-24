@@ -23,16 +23,16 @@ namespace Celery.DynamicProxy
 
     public class Test
     {
-        public virtual void DoSomething()
+        public virtual IList<int> DoSomething(IList<int> x)
         {
-            Console.WriteLine("Do something");
+            return x;
         }
     }
 
     public class Test_Proxy123123123 : Test, IProxy
     {
 
-        public override void DoSomething()
+        public override IList<int> DoSomething(IList<int> x)
         {
             if (Intercepter == null)
             {
@@ -42,8 +42,8 @@ namespace Celery.DynamicProxy
                 new DefaultMethodInvocation(
                     this, 
                     typeof(Test).GetMethod("DoSomething"),
-                    null);
-            Intercepter.Invoke(invocation);
+                    new object[0]);
+            return (IList<int>)Intercepter.Invoke(invocation);
         }
 
         #region IProxy Members

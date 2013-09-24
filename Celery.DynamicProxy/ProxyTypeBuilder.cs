@@ -53,7 +53,7 @@ namespace Celery.DynamicProxy
                 MethodImplAttributes.IL | MethodImplAttributes.Managed);
 
             ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Call, ctorInfo);
+            ilGenerator.Emit(OpCodes.Callvirt, ctorInfo);
             ilGenerator.Emit(OpCodes.Ret);
         }
 
