@@ -7,6 +7,6 @@ namespace Celery.DynamicProxy
 {
     public interface IProxy
     {
-        IMethodInterceptor Intercepter { get; set; }
+        IMethodInterceptor Interceptor { get; set; }
     }
 }

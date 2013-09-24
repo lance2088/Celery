@@ -14,22 +14,44 @@ namespace Celery.DynamicProxy
         private const string GET_METHOD_PREFIX = "get_";
         private const string SET_METHOD_PREFIX = "set_";
 
-        private Type baseType;
-        private List<Type> _interfaces = new List<Type>();
-
-        public ProxyTypeBuilder(Type baseType, params Type[] interfaces)
-        {
-            this.baseType = baseType;
-            this._interfaces = interfaces.ToList();
-        }
-
-        public Type CreateProxyType()
+        public Type CreateProxyType(Type baseType, params Type[] interfaces)
         {
             TypeBuilder typeBuilder = 
                 CreateProxyTypeBuilder(DEFAULT_PROXY_TYPE_NAME, baseType);
             DefineProxyConstructor(ReferenceData.ObjectConstructor, typeBuilder);
 
-            return typeBuilder.CreateType();
+            DefineInterceptor(typeBuilder);
+
+            List<Type> interfaceList = new List<Type>();
+            
+            if (interfaces != null && interfaces.Length != 0)
+            {
+                interfaceList.AddRange(interfaces);
+            }
+
+            Type[] intfs = interfaceList.ToArray();
+            foreach (Type intf in intfs)
+            {
+                BuildInterfaceList(intf, interfaceList);
+            }
+
+            List<MethodInfo> proxyMethodList = new List<MethodInfo>();
+            BuildInterfaceMethodList(interfaceList, proxyMethodList);
+            BuildInheritClassMethodList(baseType, proxyMethodList);
+
+            ProxyMethodBuilder proxyMethodBuilder = new ProxyMethodBuilder();
+
+            foreach (MethodInfo method in proxyMethodList)
+            {
+                proxyMethodBuilder.CreateProxyMethod(method, typeBuilder);
+            }
+
+            Type proxyType = typeBuilder.CreateType();
+
+#if DEBUG_MODE
+            DynamicProxyManager.SaveAssembly();
+#endif
+            return proxyType;
         }
 
         private void DefineProxyConstructor(
@@ -55,13 +77,6 @@ namespace Celery.DynamicProxy
             ilGenerator.Emit(OpCodes.Ldarg_0);
             ilGenerator.Emit(OpCodes.Callvirt, ctorInfo);
             ilGenerator.Emit(OpCodes.Ret);
-        }
-
-        private void DefineMethod(
-            FieldInfo field,
-            MethodInfo method, 
-            TypeBuilder typeBuilder)
-        {
         }
 
         private FieldInfo DefineField(
@@ -206,6 +221,54 @@ namespace Celery.DynamicProxy
                     BuildInterfaceList(current, interfaceList);
                 }
             }
+        }
+
+        private void BuildInterfaceMethodList(
+            IList<Type> interfaces,
+            IList<MethodInfo> proxyMethods)
+        {
+            foreach (Type intf in interfaces)
+            {
+                MethodInfo[] methods = intf.GetMethods();
+                foreach(MethodInfo method in methods)
+                {
+                    if (!proxyMethods.Contains(method))
+                    {
+                        proxyMethods.Add(method);
+                    }
+                }
+            }
+        }
+
+        private void BuildInheritClassMethodList(
+            Type baseType, 
+            IList<MethodInfo> proxyMethods)
+        {
+            MethodInfo[] methods = 
+                baseType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            foreach (MethodInfo method in methods)
+            {
+                if (method.IsPrivate || method.IsFinal) continue;
+                if (method.IsVirtual || method.IsAbstract)
+                {
+                    proxyMethods.Add(method);
+                }
+            }
+        }
+
+        private void DefineInterceptor(TypeBuilder typeBuilder)
+        {
+            typeBuilder.AddInterfaceImplementation(typeof(IProxy));
+
+            MethodBuilder getterBody = DefineGetterProperty("Interceptor", typeof(IMethodInterceptor), typeBuilder);
+            MethodBuilder setterBody = DefineSetterProperty("Interceptor", typeof(IMethodInterceptor), typeBuilder);
+
+            
+            MethodInfo getterDeclaration = typeof(IProxy).GetMethod("get_Interceptor");
+            MethodInfo setterDeclaration = typeof(IProxy).GetMethod("set_Interceptor");
+
+            typeBuilder.DefineMethodOverride(getterBody, getterDeclaration);
+            typeBuilder.DefineMethodOverride(setterBody, setterDeclaration);
         }
     }
 }

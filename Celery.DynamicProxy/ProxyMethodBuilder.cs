@@ -49,9 +49,9 @@ namespace Celery.DynamicProxy
             BuildProxyMethodBody(methodInfo, ilGenerator);
         }
 
-        private void BuildProxyMethodBody(MethodInfo methodInfo, ILGenerator il)
+        private void BuildProxyMethodBody(MethodInfo methodInfo, ILGenerator ilGenerator)
         {
-            //if (Intercepter == null)
+            //if (Interceptor == null)
             //{
             //    throw new NotImplementedException();
             //}
@@ -62,53 +62,53 @@ namespace Celery.DynamicProxy
             //        typeof(Test),
             //        null,
             //        null);
-            //Intercepter.Invoke(invocation);
+            //Interceptor.Invoke(invocation);
 
-            il.DeclareLocal(typeof(IMethodInvocation));
+            ilGenerator.DeclareLocal(typeof(IMethodInvocation));
 
             //this.get_Interceptor();
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Callvirt, ReferenceData.InterceptorGetMethod);
+            ilGenerator.Emit(OpCodes.Ldarg_0);
+            ilGenerator.Emit(OpCodes.Callvirt, ReferenceData.InterceptorGetMethod);
 
-            Label jmpThrow = il.DefineLabel();
+            Label jmpThrow = ilGenerator.DefineLabel();
 
-            //if (Intercepter == null)
-            il.Emit(OpCodes.Dup);
-            il.Emit(OpCodes.Ldnull);
-            il.Emit(OpCodes.Bne_Un, jmpThrow);
+            //if (Interceptor == null)
+            ilGenerator.Emit(OpCodes.Dup);
+            ilGenerator.Emit(OpCodes.Ldnull);
+            ilGenerator.Emit(OpCodes.Bne_Un, jmpThrow);
 
             //throw new NotImplementedException();
-            il.Emit(OpCodes.Newobj, ReferenceData.NotImplementedExceptionConstructor);
-            il.Emit(OpCodes.Throw);
+            ilGenerator.Emit(OpCodes.Newobj, ReferenceData.NotImplementedExceptionConstructor);
+            ilGenerator.Emit(OpCodes.Throw);
 
-            il.MarkLabel(jmpThrow);
+            ilGenerator.MarkLabel(jmpThrow);
 
             //push this pointer onto stack
-            il.Emit(OpCodes.Ldarg_0);
+            ilGenerator.Emit(OpCodes.Ldarg_0);
             //get RuntimeMethodHandle of methodInfo, push onto stack
-            il.Emit(OpCodes.Ldtoken, methodInfo);  
+            ilGenerator.Emit(OpCodes.Ldtoken, methodInfo);  
 
             // MethodBase.GetMethodFromHandle(runtime(methodInfo));
-            il.Emit(OpCodes.Callvirt, ReferenceData.GetMethodFromHandle);
-            il.Emit(OpCodes.Castclass, typeof(MethodInfo));
+            ilGenerator.Emit(OpCodes.Callvirt, ReferenceData.GetMethodFromHandle);
+            ilGenerator.Emit(OpCodes.Castclass, typeof(MethodInfo));
 
             //PushGenericArgs(methodInfo, il);
-            PushParameters(methodInfo, il);
+            PushParameters(methodInfo, ilGenerator);
 
             //IMethodInvocation invocation = new DefaultMethodInvocation(...);
-            il.Emit(OpCodes.Newobj, 
+            ilGenerator.Emit(OpCodes.Newobj, 
                 ReferenceData.DefaultMethodInvocationConstructor);
 
-            //Intercepter.Invoke(invocation);
-            il.Emit(OpCodes.Callvirt, 
+            //Interceptor.Invoke(invocation);
+            ilGenerator.Emit(OpCodes.Callvirt, 
                 ReferenceData.MethodInterceptorInvokeMethod);
 
+            BuildReturnValue(methodInfo, ilGenerator);
 
-
-
+            ilGenerator.Emit(OpCodes.Ret);
         }
 
-        private void PushGenericArgs(MethodInfo methodInfo, ILGenerator il)
+        private void PushGenericArgs(MethodInfo methodInfo, ILGenerator ilGenerator)
         {
             Type[] genericArgs = methodInfo.GetGenericArguments();
 
@@ -118,8 +118,8 @@ namespace Celery.DynamicProxy
                 genArgsCount = genericArgs.Length;
             }
             //Type[] genericTypeArgs = new Type[genArgsCount];
-            il.Emit(OpCodes.Ldc_I4, genArgsCount);
-            il.Emit(OpCodes.Newarr, typeof(Type));
+            ilGenerator.Emit(OpCodes.Ldc_I4, genArgsCount);
+            ilGenerator.Emit(OpCodes.Newarr, typeof(Type));
 
             if (genArgsCount > 0)
             {
@@ -127,16 +127,16 @@ namespace Celery.DynamicProxy
                 {
                     Type currentType = genericArgs[i];
                     //genericTypeArgs[i] = Type.GetTypeFromHandle(runtime(currentType));
-                    il.Emit(OpCodes.Dup);
-                    il.Emit(OpCodes.Ldc_I4, i);
-                    il.Emit(OpCodes.Ldtoken, currentType);
-                    il.Emit(OpCodes.Callvirt, ReferenceData.GetTypeFromHandle);
-                    il.Emit(OpCodes.Stelem_Ref);
+                    ilGenerator.Emit(OpCodes.Dup);
+                    ilGenerator.Emit(OpCodes.Ldc_I4, i);
+                    ilGenerator.Emit(OpCodes.Ldtoken, currentType);
+                    ilGenerator.Emit(OpCodes.Callvirt, ReferenceData.GetTypeFromHandle);
+                    ilGenerator.Emit(OpCodes.Stelem_Ref);
                 }
             }
         }
 
-        private void PushParameters(MethodInfo methodInfo, ILGenerator il)
+        private void PushParameters(MethodInfo methodInfo, ILGenerator ilGenerator)
         {
             ParameterInfo[] paramInfos = methodInfo.GetParameters();
             int paramCount = 0;
@@ -145,8 +145,8 @@ namespace Celery.DynamicProxy
                 paramCount = paramInfos.Length;
             }
             //object[] args = new object[paramCount];
-            il.Emit(OpCodes.Ldc_I4, paramCount);
-            il.Emit(OpCodes.Newarr, typeof(object));
+            ilGenerator.Emit(OpCodes.Ldc_I4, paramCount);
+            ilGenerator.Emit(OpCodes.Newarr, typeof(object));
 
             if (paramCount == 0)
             {
@@ -154,38 +154,67 @@ namespace Celery.DynamicProxy
                 return;
             }
 
-            il.Emit(OpCodes.Stloc_S, 0);
+            ilGenerator.Emit(OpCodes.Stloc_S, 0);
 
             int i = 0;
             int paramPos = 1;
             foreach (ParameterInfo param in paramInfos)
             {
                 Type paramType = param.ParameterType;
-                // args[i] = arguments[i]
-                il.Emit(OpCodes.Ldloc_S, 0); //push the reference of args array onto evaluation stack
-                il.Emit(OpCodes.Ldc_I4, i);  //push index onto the evaluation stack
+                //args[i] = arguments[i]
+                ilGenerator.Emit(OpCodes.Ldloc_S, 0); //push the reference of args array onto evaluation stack
+                ilGenerator.Emit(OpCodes.Ldc_I4, i);  //push index onto the evaluation stack
                 if (param.IsOut)
                 {
-                    il.Emit(OpCodes.Ldnull); //push null onto the evaluation stack
+                    ilGenerator.Emit(OpCodes.Ldnull); //push null onto the evaluation stack
                     //pop the value, index, and array reference, 
                     //the value is put into the array element at given index i
-                    il.Emit(OpCodes.Stelem_Ref);
+                    ilGenerator.Emit(OpCodes.Stelem_Ref);
                     paramPos++;
                     i++;
                     continue;
                 }
-                il.Emit(OpCodes.Ldarg, paramPos); //load next arg at paramPos position onto evaluation stack
+                ilGenerator.Emit(OpCodes.Ldarg, paramPos); //load next arg at paramPos position onto evaluation stack
                 if (paramType.IsValueType) //if it is value type, box it and push to stack
-                    il.Emit(OpCodes.Box, paramType);
+                    ilGenerator.Emit(OpCodes.Box, paramType);
 
                 //pop the value, index, and array reference, 
                 //the value is put into the array element at given index i
-                il.Emit(OpCodes.Stelem_Ref);
+                ilGenerator.Emit(OpCodes.Stelem_Ref);
 
                 i++;
                 paramPos++;
             }
-            il.Emit(OpCodes.Ldloc_S, 0);
+            ilGenerator.Emit(OpCodes.Ldloc_S, 0);
+        }
+
+        private void BuildReturnValue(MethodInfo methodInfo, ILGenerator ilGenerator)
+        {
+            if (methodInfo.ReturnType == typeof(void))
+            {
+                ilGenerator.Emit(OpCodes.Pop);
+                return;
+            }
+
+            //if the return value is value type, 
+            //unbox it and get value and put it on stack.
+            if (methodInfo.ReturnType.IsValueType)
+            {
+                ilGenerator.Emit(OpCodes.Unbox, methodInfo.ReturnType);
+                if (methodInfo.ReturnType.IsEnum)
+                {
+                    ilGenerator.Emit(OpCodes.Ldind_I4);
+                    return;
+                }
+
+                if (methodInfo.ReturnType.IsPrimitive)
+                {
+                    ilGenerator.Emit(ReferenceData.LdindOpCode[methodInfo.ReturnType]);
+                    return;
+                }
+
+                ilGenerator.Emit(OpCodes.Ldobj, methodInfo.ReturnType);
+            }
         }
     }
 }

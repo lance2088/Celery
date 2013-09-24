@@ -34,7 +34,7 @@ namespace Celery.DynamicProxy
 
         public override IList<int> DoSomething(IList<int> x)
         {
-            if (Intercepter == null)
+            if (Interceptor == null)
             {
                 throw new NotImplementedException();
             }
@@ -43,12 +43,12 @@ namespace Celery.DynamicProxy
                     this, 
                     typeof(Test).GetMethod("DoSomething"),
                     new object[0]);
-            return (IList<int>)Intercepter.Invoke(invocation);
+            return (IList<int>)Interceptor.Invoke(invocation);
         }
 
         #region IProxy Members
 
-        public IMethodInterceptor Intercepter
+        public IMethodInterceptor Interceptor
         {
             get;
             set;
@@ -59,13 +59,40 @@ namespace Celery.DynamicProxy
 
     public class ProxyFactory
     {
-        public virtual Type CreateProxyType(
+        public Type CreateProxyType(
             Type baseType, params Type[] baseInterfaces)
         {
             ProxyTypeBuilder ptb = 
-                new ProxyTypeBuilder(baseType, baseInterfaces);
-            Type type = ptb.CreateProxyType();
+                new ProxyTypeBuilder();
+            Type type = ptb.CreateProxyType(baseType, baseInterfaces);
             return type;
+        }
+
+        public T CreateProxy<T>(
+            IMethodInterceptor interceptor, 
+            params Type[] baseInterfaces)
+        {
+            Type proxyType = CreateProxyType(typeof(T), baseInterfaces);
+            T result = (T)Activator.CreateInstance(proxyType);
+
+            IProxy proxy = (IProxy)result;
+            proxy.Interceptor = interceptor;
+
+            return result;
+        }
+
+        public object CreateProxy(
+            Type instanceType, 
+            IMethodInterceptor interceptor, 
+            params Type[] baseInterfaces)
+        {
+            Type proxyType = CreateProxyType(instanceType, baseInterfaces);
+            object result = Activator.CreateInstance(proxyType);
+            IProxy proxy = (IProxy)result;
+            
+            proxy.Interceptor = interceptor;
+
+            return result;
         }
     }
 }
