@@ -15,11 +15,11 @@ namespace Celery.DynamicProxy
         public DefaultMethodInvocation(
             object proxy,
             MethodInfo method,
-            object[] arguments)
+            object[] parameters)
         {
             this.proxy = proxy;
             this.method = method;
-            this.parameters = arguments;
+            this.parameters = parameters;
         }
 
         #region IMethodInvocation Members
