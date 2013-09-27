@@ -19,7 +19,21 @@ namespace Celery.DynamicProxy.Test
 
             Assert.IsTrue(proxy is IProxy);
             Assert.IsTrue(proxy is ProxyTestClass);
-            Assert.AreEqual("test", ((ProxyTestClass)proxy).GetName());
+            ProxyTestClass proxyTest = proxy as ProxyTestClass;
+            Assert.AreEqual("test", proxyTest.Name);
+        }
+
+        [Test]
+        public void InterceptVirtualMethod()
+        {
+            ProxyFactory factory = new ProxyFactory();
+            ProxyTestClass test = new ProxyTestClass("test");
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), new NopInterceptor(test));
+
+            Assert.IsTrue(proxy is IProxy);
+            Assert.IsTrue(proxy is ProxyTestClass);
+            ProxyTestClass proxyTest = proxy as ProxyTestClass;
+            Assert.AreEqual("test", proxyTest.Name);
         }
     }
 
@@ -34,6 +48,18 @@ namespace Celery.DynamicProxy.Test
         public virtual string GetName()
         {
             return this._name;
+        }
+
+        public virtual string Name
+        {
+            get
+            {
+                return this._name;
+            }
+            set
+            {
+                this._name = value;
+            }
         }
     }
 
