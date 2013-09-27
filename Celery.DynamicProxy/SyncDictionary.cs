@@ -108,7 +108,14 @@ namespace Celery.DynamicProxy
         {
             get
             {
-                return this._dictionary[key];
+                TValue val = default(TValue);
+
+                if (this.TryGetValue(key, out val))
+                {
+                    return val;
+                }
+
+                return val;
             }
             set
             {

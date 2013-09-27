@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define DEBUG_MODE
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -75,7 +76,7 @@ namespace Celery.DynamicProxy
                 MethodImplAttributes.IL | MethodImplAttributes.Managed);
 
             ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Callvirt, ctorInfo);
+            ilGenerator.Emit(OpCodes.Call, ctorInfo);
             ilGenerator.Emit(OpCodes.Ret);
         }
 
@@ -94,16 +95,12 @@ namespace Celery.DynamicProxy
         private MethodBuilder DefineGetterProperty(
             string propertyName,
             Type propertyType,
+            FieldInfo fieldInfo,
             TypeBuilder typeBuilder
             )
         {
             string fieldName =
                 string.Format("{0}{1}", FIELD_PREFIX, propertyName.ToLower());
-            FieldInfo field = typeBuilder.GetField(fieldName);
-            if (field == null)
-            {
-                field = DefineField(fieldName, propertyType, typeBuilder);
-            }
 
             MethodAttributes attributes =
                 MethodAttributes.Public |
@@ -129,7 +126,7 @@ namespace Celery.DynamicProxy
             ILGenerator ilGenerator = getter.GetILGenerator();
 
             ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Ldfld, field);
+            ilGenerator.Emit(OpCodes.Ldfld, fieldInfo);
             ilGenerator.Emit(OpCodes.Ret);
 
             return getter;
@@ -138,20 +135,12 @@ namespace Celery.DynamicProxy
         private MethodBuilder DefineSetterProperty(
             string propertyName,
             Type propertyType,
+            FieldInfo fieldInfo,
             TypeBuilder typeBuilder
             )
         {
-            string fieldName =
-                string.Format("{0}{1}", FIELD_PREFIX, propertyName.ToLower());
-
             string getMethodName =
                 string.Format("{0}{1}", GET_METHOD_PREFIX, propertyName);
-
-            FieldInfo field = typeBuilder.GetField(fieldName);
-            if (field == null)
-            {
-                field = DefineField(fieldName, propertyType, typeBuilder);
-            }
 
             MethodAttributes attributes =
                 MethodAttributes.Public |
@@ -174,7 +163,7 @@ namespace Celery.DynamicProxy
             ILGenerator ilGenerator = getter.GetILGenerator();
 
             ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Ldfld, field);
+            ilGenerator.Emit(OpCodes.Ldfld, fieldInfo);
             ilGenerator.Emit(OpCodes.Ret);
 
             string setMethodName =
@@ -194,7 +183,7 @@ namespace Celery.DynamicProxy
             ilGenerator = setter.GetILGenerator();
             ilGenerator.Emit(OpCodes.Ldarg_0);
             ilGenerator.Emit(OpCodes.Ldarg_1);
-            ilGenerator.Emit(OpCodes.Stfld, field);
+            ilGenerator.Emit(OpCodes.Stfld, fieldInfo);
             ilGenerator.Emit(OpCodes.Ret);
 
             return setter;
@@ -259,9 +248,20 @@ namespace Celery.DynamicProxy
         private void DefineInterceptor(TypeBuilder typeBuilder)
         {
             typeBuilder.AddInterfaceImplementation(typeof(IProxy));
+            string propertyName = "Interceptor";
+            Type propertyType = typeof(IMethodInterceptor);
 
-            MethodBuilder getterBody = DefineGetterProperty("Interceptor", typeof(IMethodInterceptor), typeBuilder);
-            MethodBuilder setterBody = DefineSetterProperty("Interceptor", typeof(IMethodInterceptor), typeBuilder);
+            string fieldName =
+                string.Format("{0}{1}", FIELD_PREFIX, propertyName.ToLower());
+
+            FieldInfo fieldInfo = DefineField(fieldName, propertyType, typeBuilder);
+
+            MethodBuilder getterBody = 
+                DefineGetterProperty(
+                    propertyName, propertyType, fieldInfo, typeBuilder);
+            MethodBuilder setterBody = 
+                DefineSetterProperty(
+                    propertyName, propertyType, fieldInfo, typeBuilder);
 
             
             MethodInfo getterDeclaration = typeof(IProxy).GetMethod("get_Interceptor");

@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define DEBUG_MODE
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,17 +19,17 @@ namespace Celery.DynamicProxy
             ModuleBuilder moduleBuilder = m_moduleCache[assemblyName];
             if (moduleBuilder == null)
             {
+                AssemblyName an = new AssemblyName(assemblyName);
 
                 AssemblyBuilder assemblyBuilder = GetAssemblyBuilder(assemblyName);
 #if DEBUG_MODE
-                ModuleBuilder moduleBuilder =
+                moduleBuilder =
                     assemblyBuilder.DefineDynamicModule(an.Name, string.Format("{0}.mod", an.Name), true);
 #else
                 moduleBuilder =
-                    assemblyBuilder.DefineDynamicModule(assemblyName);
-
-                m_moduleCache[assemblyName] = moduleBuilder;
+                    assemblyBuilder.DefineDynamicModule(an.Name);
 #endif
+                m_moduleCache[assemblyName] = moduleBuilder;
             }
             return moduleBuilder;
         }

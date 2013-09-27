@@ -5,57 +5,57 @@ using System.Text;
 
 namespace Celery.DynamicProxy
 {
-    public class DebugInterceptor : IMethodInterceptor
-    {
-        private object target;
-        public DebugInterceptor(object target)
-        {
-            this.target = target;
-        }
-        public object Invoke(IMethodInvocation invocation)
-        {
-            Console.WriteLine("Before: invocation=[{0}]", invocation);
-            object rval = invocation.Invoke(target);
-            Console.WriteLine("Invocation returned");
-            return rval;
-        }
-    }
+    //public class DebugInterceptor : IMethodInterceptor
+    //{
+    //    private object target;
+    //    public DebugInterceptor(object target)
+    //    {
+    //        this.target = target;
+    //    }
+    //    public object Invoke(IMethodInvocation invocation)
+    //    {
+    //        Console.WriteLine("Before: invocation=[{0}]", invocation);
+    //        object rval = invocation.Invoke(target);
+    //        Console.WriteLine("Invocation returned");
+    //        return rval;
+    //    }
+    //}
 
-    public class Test
-    {
-        public virtual IList<int> DoSomething(IList<int> x)
-        {
-            return x;
-        }
-    }
+    //public class Test
+    //{
+    //    public virtual IList<int> DoSomething(IList<int> x)
+    //    {
+    //        return x;
+    //    }
+    //}
 
-    public class Test_Proxy123123123 : Test, IProxy
-    {
+    //public class Test_Proxy123123123 : Test, IProxy
+    //{
 
-        public override IList<int> DoSomething(IList<int> x)
-        {
-            if (Interceptor == null)
-            {
-                throw new NotImplementedException();
-            }
-            IMethodInvocation invocation = 
-                new DefaultMethodInvocation(
-                    this, 
-                    typeof(Test).GetMethod("DoSomething"),
-                    new object[0]);
-            return (IList<int>)Interceptor.Invoke(invocation);
-        }
+    //    public override IList<int> DoSomething(IList<int> x)
+    //    {
+    //        if (Interceptor == null)
+    //        {
+    //            throw new NotImplementedException();
+    //        }
+    //        IMethodInvocation invocation = 
+    //            new DefaultMethodInvocation(
+    //                this, 
+    //                typeof(Test).GetMethod("DoSomething"),
+    //                new object[0]);
+    //        return (IList<int>)Interceptor.Invoke(invocation);
+    //    }
 
-        #region IProxy Members
+    //    #region IProxy Members
 
-        public IMethodInterceptor Interceptor
-        {
-            get;
-            set;
-        }
+    //    public IMethodInterceptor Interceptor
+    //    {
+    //        get;
+    //        set;
+    //    }
 
-        #endregion
-    }
+    //    #endregion
+    //}
 
     public class ProxyFactory
     {
