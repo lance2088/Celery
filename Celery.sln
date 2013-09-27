@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celery.DynamicProxy", "Celery.DynamicProxy\Celery.DynamicProxy.csproj", "{378ACAB9-7E3E-4074-B984-B8D70C3BF054}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celery.DynamicProxy.Test", "Celery.DynamicProxy.Test\Celery.DynamicProxy.Test.csproj", "{4D0EFC0B-AB67-4971-82C1-DF12A9C2D4B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celery.DynamicProxy.Test", "Celery.DynamicProxy.Test\Celery.DynamicProxy.Test.csproj", "{B1BB93FB-9D41-4943-88D6-381FE1721E97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,10 @@ Global
 		{378ACAB9-7E3E-4074-B984-B8D70C3BF054}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{378ACAB9-7E3E-4074-B984-B8D70C3BF054}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{378ACAB9-7E3E-4074-B984-B8D70C3BF054}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4D0EFC0B-AB67-4971-82C1-DF12A9C2D4B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4D0EFC0B-AB67-4971-82C1-DF12A9C2D4B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4D0EFC0B-AB67-4971-82C1-DF12A9C2D4B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4D0EFC0B-AB67-4971-82C1-DF12A9C2D4B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1BB93FB-9D41-4943-88D6-381FE1721E97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1BB93FB-9D41-4943-88D6-381FE1721E97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1BB93FB-9D41-4943-88D6-381FE1721E97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1BB93FB-9D41-4943-88D6-381FE1721E97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

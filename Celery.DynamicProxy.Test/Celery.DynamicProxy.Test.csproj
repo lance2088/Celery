@@ -6,6 +6,7 @@
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4D0EFC0B-AB67-4971-82C1-DF12A9C2D4B0}</ProjectGuid>
+    <ProjectGuid>{B1BB93FB-9D41-4943-88D6-381FE1721E97}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Celery.DynamicProxy.Test</RootNamespace>
