@@ -100,7 +100,7 @@ namespace Celery.DynamicProxy
                 ReferenceData.DefaultMethodInvocationConstructor);
 
             //Interceptor.Invoke(invocation);
-            ilGenerator.Emit(OpCodes.Call, 
+            ilGenerator.Emit(OpCodes.Callvirt, 
                 ReferenceData.MethodInterceptorInvokeMethod);
 
             BuildReturnValue(methodInfo, ilGenerator);
