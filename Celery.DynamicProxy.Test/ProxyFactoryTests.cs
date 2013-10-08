@@ -15,42 +15,43 @@ namespace Celery.DynamicProxy.Test
         public void DirectCall()
         {
             ProxyFactory factory = new ProxyFactory();
-            ProxyTestClass test = new ProxyTestClass("test");
-            object proxy = factory.CreateProxy(typeof(ProxyTestClass), new NopInterceptor(test));
+            NopInterceptor interceptor = new NopInterceptor(new ProxyTestClass("test"));
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), interceptor);
 
             Assert.IsTrue(proxy is IProxy);
             Assert.IsTrue(proxy is ProxyTestClass);
             ProxyTestClass proxyTest = proxy as ProxyTestClass;
             Assert.AreEqual("test", proxyTest.Name);
+            Assert.AreEqual(1, interceptor.Count);
         }
 
         [Test]
         public void InterceptVirtualMethod()
         {
             ProxyFactory factory = new ProxyFactory();
-            ProxyTestClass test = new ProxyTestClass("test");
-            object proxy = factory.CreateProxy(typeof(ProxyTestClass), new NopInterceptor(test));
+            NopInterceptor interceptor = new NopInterceptor(new ProxyTestClass("test"));
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), interceptor);
 
             Assert.IsTrue(proxy is IProxy);
             Assert.IsTrue(proxy is ProxyTestClass);
             ProxyTestClass proxyTest = proxy as ProxyTestClass;
             proxyTest.Name = "test1";
             Assert.AreEqual("test1", proxyTest.Name);
+            Assert.AreEqual(2, interceptor.Count);
         }
 
         [Test]
         public void InterceptVirtualAndOverloadMethod()
         {
             ProxyFactory factory = new ProxyFactory();
-            ProxyTestClass test = new ProxyTestClass("test", 0);
+            NopInterceptor interceptor = new NopInterceptor(new ProxyTestClass("test", 0));
 
-            object proxy = factory.CreateProxy(typeof(ProxyTestClass), new NopInterceptor(test));
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), interceptor);
 
             Assert.IsTrue(proxy is IProxy);
             Assert.IsTrue(proxy is ProxyTestClass);
-
+            
             ProxyTestClass proxyTest = proxy as ProxyTestClass;
-
             Assert.AreEqual(0, proxyTest.Count);
 
             proxyTest.Dosomething(2);
@@ -62,6 +63,7 @@ namespace Celery.DynamicProxy.Test
 
             Assert.AreEqual("testing", proxyTest.Name);
             Assert.AreEqual(2, proxyTest.Count);
+            Assert.AreEqual(7, interceptor.Count);
         }
     }
 
@@ -116,12 +118,22 @@ namespace Celery.DynamicProxy.Test
     public class NopInterceptor : IMethodInterceptor
     {
         private object target;
+        private int count;
+
+        public int Count
+        {
+            get { return count; }
+        }
+
         public NopInterceptor(object target)
         {
             this.target = target;
+            this.count = 0;
         }
+        
         public object Invoke(IMethodInvocation invocation)
         {
+            this.count++;
             return invocation.Invoke(target);
         }
     }
