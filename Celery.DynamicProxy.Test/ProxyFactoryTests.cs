@@ -39,7 +39,7 @@ namespace Celery.DynamicProxy.Test
         }
 
         [Test]
-        public void InterceptVirtualMethodAndAmbiguousMatches()
+        public void InterceptVirtualAndOverloadMethod()
         {
             ProxyFactory factory = new ProxyFactory();
             ProxyTestClass test = new ProxyTestClass("test", 0);
@@ -55,28 +55,13 @@ namespace Celery.DynamicProxy.Test
 
             proxyTest.Dosomething(2);
 
-            //Assert.AreEqual(2, proxyTest.Count);
+            Assert.AreEqual(2, proxyTest.Count);
             Assert.AreEqual("test", proxyTest.Name);
 
             proxyTest.Dosomething("ing");
 
             Assert.AreEqual("testing", proxyTest.Name);
-            //Assert.AreEqual(2, proxyTest.Count);
-
-            //ProxyTestClass c = new ProxyTestClassEx("", 0);
-            //c.Dosomething(5);
-
-            //Assert.AreEqual(5, c.Count);
-        }
-    }
-
-    public class ProxyTestClassEx : ProxyTestClass
-    {
-
-        public ProxyTestClassEx(string name, int count) : base(name, count) { }
-        public override void Dosomething(int count)
-        {
-            base.Dosomething(count);
+            Assert.AreEqual(2, proxyTest.Count);
         }
     }
 
@@ -85,7 +70,7 @@ namespace Celery.DynamicProxy.Test
         private string _name;
         private int _count;
 
-        public int Count
+        public virtual int Count
         {
             get { return _count; }
             set { _count = value; }
