@@ -65,9 +65,33 @@ namespace Celery.DynamicProxy.Test
             Assert.AreEqual(2, proxyTest.Count);
             Assert.AreEqual(7, interceptor.Count);
         }
+
+        [Test]
+        public void InterceptInterfaceVirtualMethod()
+        {
+            ProxyFactory factory = new ProxyFactory();
+            NopInterceptor interceptor = new NopInterceptor(new ProxyTestClass("test", 0));
+
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), interceptor);
+
+            Assert.IsTrue(proxy is IProxy);
+            Assert.IsTrue(proxy is IProxyTest);
+            Assert.IsTrue(proxy is ProxyTestClass);
+
+            IProxyTest proxyTest = proxy as IProxyTest;
+
+            Assert.AreEqual("test", proxyTest.GetName());
+            Assert.AreEqual(1, interceptor.Count);
+        }
     }
 
-    public class ProxyTestClass
+    public interface IProxyTest
+    {
+        void ReplaceName(string name);
+        string GetName();
+    }
+
+    public class ProxyTestClass : IProxyTest
     {
         private string _name;
         private int _count;
@@ -85,11 +109,6 @@ namespace Celery.DynamicProxy.Test
         {
             this._name = name;
             this._count = count;
-        }
-
-        public virtual string GetName()
-        {
-            return this._name;
         }
 
         public virtual string Name
@@ -113,6 +132,20 @@ namespace Celery.DynamicProxy.Test
         {
             this._count += count;
         }
+
+        #region IProxyTest Members
+
+        public void ReplaceName(string name)
+        {
+            this._name = name;
+        }
+
+        public virtual string GetName()
+        {
+            return this._name;
+        }
+
+        #endregion
     }
 
     public class NopInterceptor : IMethodInterceptor
