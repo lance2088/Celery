@@ -83,6 +83,50 @@ namespace Celery.DynamicProxy.Test
             Assert.AreEqual("test", proxyTest.GetName());
             Assert.AreEqual(1, interceptor.Count);
         }
+
+        [Test]
+        public void InterceptInterfaceNonVirtualMethod()
+        {
+            ProxyFactory factory = new ProxyFactory();
+            NopInterceptor interceptor = new NopInterceptor(new ProxyTestClass("test", 0));
+
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), interceptor);
+            
+            Assert.IsTrue(proxy is IProxy);
+            Assert.IsTrue(proxy is IProxyTest);
+            Assert.IsTrue(proxy is ProxyTestClass);
+
+            IProxyTest proxyTest = proxy as IProxyTest;
+            proxyTest.ReplaceName("test1");
+            Assert.AreEqual(0, interceptor.Count);
+            Assert.AreEqual("test", proxyTest.GetName());
+            Assert.AreEqual(1, interceptor.Count);
+        }
+
+        [Test]
+        public void InterceptGenericMethodWithoutArgs()
+        {
+            ProxyFactory factory = new ProxyFactory();
+            NopInterceptor interceptor = new NopInterceptor(new ProxyTestClass("test", 0));
+
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), interceptor);
+
+            ProxyTestClass proxyTest = proxy as ProxyTestClass;
+            Assert.AreEqual(typeof(int), proxyTest.GenericMethod<int>());
+            Assert.AreEqual(1, interceptor.Count);
+        }
+
+        [Test]
+        public void InterceptGenericMethodWithGenericParams()
+        {
+            ProxyFactory factory = new ProxyFactory();
+            NopInterceptor interceptor = new NopInterceptor(new ProxyTestClass("test", 0));
+
+            object proxy = factory.CreateProxy(typeof(ProxyTestClass), interceptor);
+            ProxyTestClass proxyTest = proxy as ProxyTestClass;
+            //Assert.AreEqual(5, proxyTest.GenericMethod<int>(5));
+            //Assert.AreEqual(1, interceptor.Count);
+        }
     }
 
     public interface IProxyTest
@@ -146,6 +190,16 @@ namespace Celery.DynamicProxy.Test
         }
 
         #endregion
+
+        public virtual Type GenericMethod<T>()
+        {
+            return typeof(T);
+        }
+
+        public virtual T GenericMethod<T>(T arg)
+        {
+            return arg;
+        }
     }
 
     public class NopInterceptor : IMethodInterceptor
